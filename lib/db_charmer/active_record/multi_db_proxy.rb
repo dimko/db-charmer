@@ -34,6 +34,18 @@ module DbCharmer
 
           # Block call
           begin
+
+            # Obtain the lock if starting a new chain of on_db calls
+            if DbCharmer.use_multithreading
+              if Thread.current[:db_charmer_in_on_db_call]
+                in_outer_call = false
+              else
+                db_charmer_connection_proxy_mutex.lock
+                Thread.current[:db_charmer_in_on_db_call] = true
+                in_outer_call = true
+              end
+            end
+
             self.db_charmer_connection_level += 1
             old_proxy = db_charmer_connection_proxy
             switch_connection_to(con, DbCharmer.connections_should_exist?)
@@ -41,6 +53,13 @@ module DbCharmer
           ensure
             switch_connection_to(old_proxy)
             self.db_charmer_connection_level -= 1
+
+            # Release the lock if in the outer call
+            if DbCharmer.use_multithreading && in_outer_call
+              Thread.current[:db_charmer_in_on_db_call] = false
+              db_charmer_connection_proxy_mutex.unlock
+            end
+
           end
         end
       end

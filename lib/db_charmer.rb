@@ -27,6 +27,8 @@ module DbCharmer
   # Accessors
   @@connections_should_exist = true
   mattr_accessor :connections_should_exist
+  @@use_multithreading = false
+  mattr_accessor :use_multithreading
 
   # Try to detect current environment or use development by default
   if defined?(Rails)

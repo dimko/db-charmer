@@ -20,6 +20,11 @@ module DbCharmer
         @@db_charmer_connection_proxies[self.name]
       end
 
+      @@db_charmer_connection_proxy_mutexes = Hash.new { |h, k| h[k] = Mutex.new }
+      def db_charmer_connection_proxy_mutex
+        @@db_charmer_connection_proxy_mutexes[self.name]
+      end
+
       #-----------------------------------------------------------------------------
       @@db_charmer_default_connections = {}
       def db_charmer_default_connection=(conn)
